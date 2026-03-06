@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>EUM Glass Gregorian Chant AR</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="language-screen" class="overlay-screen">
+        <div class="modal-content">
+            <p>日本語か英語を選んでください<br>Select the language</p>
+            <div class="btn-group">
+                <button id="btn-ja" onclick="selectLanguage('ja')">日本語</button>
+                <button id="btn-en" onclick="selectLanguage('en')">English</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="ui-layer" class="hidden">
+        <div class="bottom-controls">
+            <button id="info-btn" class="circle-btn">INFO</button>
+            <button id="credits-btn" class="circle-btn">CREDITS</button>
+        </div>
+
+        <div id="modal-overlay" class="modal-overlay hidden">
+            <div id="modal-window" class="modal-window">
+                <div class="drag-bar"></div> <div id="modal-body" class="modal-body">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <a-scene 
+        mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: false; filterMinCF:0.0001; filterBeta: 0.001;" 
+        embedded color-space="sRGB" 
+        renderer="colorManagement: true, physicallyCorrectLights" 
+        vr-mode-ui="enabled: false" 
+        device-orientation-permission-ui="enabled: false">
+        
+        <a-assets>
+            <audio id="audio-kyrie" src="assets/audio/Kyrie.m4a" preload="auto"></audio>
+            <audio id="audio-gloria" src="assets/audio/Gloria.m4a" preload="auto"></audio>
+            <audio id="audio-credo" src="assets/audio/Credo.m4a" preload="auto"></audio>
+            <audio id="audio-sanctus" src="assets/audio/Sanctus.m4a" preload="auto"></audio>
+            <audio id="audio-agnus" src="assets/audio/AgnusDei.m4a" preload="auto"></audio>
+            <audio id="audio-ave" src="assets/audio/AveMaria.m4a" preload="auto"></audio>
+            
+            <img id="icon-stop" src="assets/icons/icon_stop.png">
+        </a-assets>
+
+        <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;" raycaster="far: 10000; objects: .clickable"></a-camera>
+
+        <a-entity id="ar-world-root">
+            </a-entity>
+
+        <a-entity id="marker-anchor" mindar-image-target="targetIndex: 0"></a-entity>
+
+    </a-scene>
+
+    <script src="app.js"></script>
+</body>
+</html>
