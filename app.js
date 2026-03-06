@@ -36,10 +36,31 @@ const translations = {
 
 function selectLanguage(lang) {
     selectedLanguage = lang;
+    
+    // UIの切り替え
     document.getElementById('language-screen').classList.add('hidden');
     document.getElementById('ui-layer').classList.remove('hidden');
+
     const sceneEl = document.querySelector('a-scene');
-    sceneEl.systems['mindar-image-system'].start();
+    
+    // ARを起動する内部関数
+    const startAR = () => {
+        const arSystem = sceneEl.systems['mindar-image-system'];
+        if (arSystem) {
+            console.log("MindAR system found! Starting...");
+            arSystem.start(); // ここでカメラが起動する
+        } else {
+            console.error("MindAR system is still undefined. Is the script loaded?");
+        }
+    };
+
+    // A-Frameの準備ができているかチェック
+    if (sceneEl.hasLoaded) {
+        startAR();
+    } else {
+        // まだなら「準備完了(loaded)」イベントを待ってから実行
+        sceneEl.addEventListener('loaded', startAR);
+    }
 }
 
 const markerAnchor = document.getElementById('marker-anchor');
