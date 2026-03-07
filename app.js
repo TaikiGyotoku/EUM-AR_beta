@@ -5,6 +5,7 @@ let currentPlayingId = null;
 let isPlaying = false;
 let isFirstFound = false;
 
+// 翻訳データ（変更なし）
 const translations = {
     ja: {
         chantTitle: "グレゴリオ聖歌について",
@@ -34,52 +35,82 @@ const translations = {
     }
 };
 
+/**
+ * 1. 言語選択とAR起動
+ */
 function selectLanguage(lang) {
     selectedLanguage = lang;
     
-    // UIの切り替え
     document.getElementById('language-screen').classList.add('hidden');
     document.getElementById('ui-layer').classList.remove('hidden');
 
     const sceneEl = document.querySelector('a-scene');
     
-    // ARを起動する内部関数
     const startAR = () => {
         const arSystem = sceneEl.systems['mindar-image-system'];
         if (arSystem) {
-            console.log("MindAR system found! Starting...");
-            arSystem.start(); // ここでカメラが起動する
-        } else {
-            console.error("MindAR system is still undefined. Is the script loaded?");
+            console.log("MindAR starting...");
+            arSystem.start(); 
+
+            // ★【PC・スマホ表示対策】
+            // カメラ起動の1秒後にリサイズイベントを強制発火させ、
+            // 黒画面や表示ズレを解消します
+            setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+            }, 1000);
         }
     };
 
-    // A-Frameの準備ができているかチェック
     if (sceneEl.hasLoaded) {
         startAR();
     } else {
-        // まだなら「準備完了(loaded)」イベントを待ってから実行
         sceneEl.addEventListener('loaded', startAR);
     }
 }
 
+/**
+ * 2. マーカー認識と位置固定ロジック
+ */
 const markerAnchor = document.getElementById('marker-anchor');
 const arWorldRoot = document.getElementById('ar-world-root');
 
 if (markerAnchor) {
     markerAnchor.addEventListener("targetFound", event => {
         if (!isFirstFound) {
+            console.log("Marker Found! Fixing position...");
+
+            // 現在のマトリックスを最新の状態に更新
+            markerAnchor.object3D.updateMatrixWorld();
+
             const worldPos = new THREE.Vector3();
             const worldQuat = new THREE.Quaternion();
             const worldScale = new THREE.Vector3();
+
+            // マーカーの現在の世界座標・回転・スケールを分解取得
             markerAnchor.object3D.matrixWorld.decompose(worldPos, worldQuat, worldScale);
+
+            // 固定用のルート要素(ar-world-root)に座標をコピー
             arWorldRoot.object3D.position.copy(worldPos);
             arWorldRoot.object3D.quaternion.copy(worldQuat);
+            // スケールも合わせる（必要に応じて）
+            arWorldRoot.object3D.scale.set(1, 1, 1); 
+
+            // ★【重要】スキャンアニメーションを停止し、再スキャンを防ぐ
+            const sceneEl = document.querySelector('a-scene');
+            const arSystem = sceneEl.systems['mindar-image-system'];
+            if (arSystem) {
+                arSystem.stopScanning(); // これで、マーカーが外れてもスキャン画面に戻りません
+            }
+
             isFirstFound = true;
+            console.log("AR Content Fixed at:", worldPos);
         }
     });
 }
 
+/**
+ * 3. オーディオ制御（変更なし）
+ */
 function handlePlayControl(id) {
     if (currentPlayingId === id) {
         stopAll();
@@ -93,7 +124,9 @@ function playSong(id) {
     currentPlayingId = id;
     isPlaying = true;
     const audio = document.getElementById(`audio-${id}`);
-    if (audio) audio.play();
+    if (audio) {
+        audio.play().catch(e => console.error("Audio play failed:", e));
+    }
     requestAnimationFrame(updateFrameSync);
 }
 
@@ -117,87 +150,67 @@ function updateFrameSync() {
     requestAnimationFrame(updateFrameSync);
 }
 
-// --- INFOボタンの処理修正 ---
+/**
+ * 4. UI・モーダル制御（修正済み）
+ */
 document.getElementById('info-btn').addEventListener('click', () => {
     const body = document.getElementById('modal-body');
-
     if (currentPlayingId) {
         body.innerHTML = `<h3>${translations[selectedLanguage].songs[currentPlayingId]}</h3><p>${translations[selectedLanguage].chantDesc}</p>`;
     } else {
         body.innerHTML = `<h3>${translations[selectedLanguage].chantTitle}</h3><p>${translations[selectedLanguage].chantDesc}</p>`;
     }
-    
-    // 先にモーダルを表示する
     document.getElementById('modal-overlay').classList.remove('hidden');
-
-    // ★修正部分：表示された直後（次の画面更新のタイミング）でスクロールをリセット
-    requestAnimationFrame(() => {
-        body.scrollTop = 0; 
-    });
+    requestAnimationFrame(() => { body.scrollTop = 0; });
 });
 
-// --- CREDITSボタンの処理修正 ---
 document.getElementById('credits-btn').addEventListener('click', () => {
     const body = document.getElementById('modal-body');
-
-    body.innerHTML = translations[selectedLanguage].credits;
-    
-    // 先にモーダルを表示する
+    body.innerHTML = `<h3>Credits</h3><p>${translations[selectedLanguage].credits}</p>`;
     document.getElementById('modal-overlay').classList.remove('hidden');
-
-    // ★修正部分：表示された直後でスクロールをリセット
-    requestAnimationFrame(() => {
-        body.scrollTop = 0; 
-    });
+    requestAnimationFrame(() => { body.scrollTop = 0; });
 });
 
-document.getElementById('modal-overlay').addEventListener('click', (e) => {
-    if (e.target.id === 'modal-overlay') {
-        document.getElementById('modal-overlay').classList.add('hidden');
-    }
-});
-
-// --- 21. モーダルのスワイプ閉鎖ロジック ---
+/**
+ * 5. モーダルのスワイプ閉鎖ロジック
+ */
 const modalWindow = document.getElementById('modal-window');
 const modalOverlay = document.getElementById('modal-overlay');
 let startY = 0;
 let currentY = 0;
 let isDragging = false;
 
-// タッチ開始
+function closeModal() {
+    modalOverlay.classList.add('hidden');
+    modalWindow.style.transform = '';
+    currentY = 0;
+}
+
 modalWindow.addEventListener('touchstart', (e) => {
     startY = e.touches[0].clientY;
     modalWindow.classList.add('dragging');
     isDragging = true;
 }, {passive: true});
 
-// タッチ中
 modalWindow.addEventListener('touchmove', (e) => {
     if (!isDragging) return;
     currentY = e.touches[0].clientY - startY;
-    
-    // 下方向にドラッグしている時だけ動かす
     if (currentY > 0) {
         modalWindow.style.transform = `translateY(${currentY}px)`;
     }
 }, {passive: true});
 
-// タッチ終了
 modalWindow.addEventListener('touchend', () => {
     isDragging = false;
     modalWindow.classList.remove('dragging');
-    
-    // 80px以上下に引っ張ったら閉じる
     if (currentY > 80) {
         closeModal();
     } else {
-        // 足りなければ元に戻す
         modalWindow.style.transform = '';
     }
-    currentY = 0;
 });
 
-// マウスでのドラッグにも対応させる場合
+// PCでのドラッグ操作
 modalWindow.addEventListener('mousedown', (e) => {
     startY = e.clientY;
     modalWindow.classList.add('dragging');
@@ -207,32 +220,17 @@ modalWindow.addEventListener('mousedown', (e) => {
 window.addEventListener('mousemove', (e) => {
     if (!isDragging) return;
     currentY = e.clientY - startY;
-    if (currentY > 0) {
-        modalWindow.style.transform = `translateY(${currentY}px)`;
-    }
+    if (currentY > 0) modalWindow.style.transform = `translateY(${currentY}px)`;
 });
 
 window.addEventListener('mouseup', () => {
     if (!isDragging) return;
     isDragging = false;
     modalWindow.classList.remove('dragging');
-    if (currentY > 80) {
-        closeModal();
-    } else {
-        modalWindow.style.transform = '';
-    }
-    currentY = 0;
+    if (currentY > 80) closeModal();
+    else modalWindow.style.transform = '';
 });
 
-// モーダルを閉じる共通処理
-function closeModal() {
-    modalOverlay.classList.add('hidden');
-    modalWindow.style.transform = ''; // 位置をリセットしておく
-}
-
-// 既存の「外側クリックで閉じる」も共通処理に書き換え
 modalOverlay.addEventListener('click', (e) => {
-    if (e.target.id === 'modal-overlay') {
-        closeModal();
-    }
+    if (e.target.id === 'modal-overlay') closeModal();
 });

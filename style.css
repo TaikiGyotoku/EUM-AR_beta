@@ -1,83 +1,85 @@
-/* 1. 基本設定とセーフエリア対応 */
+/* =========================================
+   1. 基本設定と全画面固定
+   ========================================= */
 :root {
     --safe-bottom: env(safe-area-inset-bottom);
     --modal-bg: rgba(255, 255, 255, 0.95);
 }
 
-body {
-    margin: 0;
-    overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background-color: #000;
-}
-
-.hidden {
-    display: none !important;
-}
-
-/* 1. 土台を完全に固定 */
 html, body {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background-color: #000;
+    background-color: #000; /* 読み込み前の隙間を黒にする */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-/* 2. A-Frameの舞台を全画面に固定 */
+.hidden {
+    display: none !important;
+}
+
+/* =========================================
+   2. ARシーン・カメラ映像（最重要）
+   ========================================= */
+
+/* A-Frameの舞台 */
 a-scene {
     width: 100vw !important;
     height: 100vh !important;
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
+    z-index: 0;
 }
 
-/* 3. 【最重要】カメラの生映像を全画面に引き伸ばす */
+/* マーカー読み取り中に出る「video」要素を全画面に */
 video {
     width: 100vw !important;
     height: 100vh !important;
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
-    object-fit: cover !important; /* これで「横長」を「縦長全画面」にフィットさせます */
-    z-index: -1;
+    /* そのままの縮尺を保ちつつ、画面を埋めるまでズーム（クリップ解消） */
+    object-fit: cover !important; 
+    z-index: -2 !important; /* 一番後ろ */
+    display: block !important;
 }
 
-/* 4. A-Frameの描画キャンバスも全画面に */
+/* A-Frameが生成する描画キャンバス */
 .a-canvas {
     width: 100% !important;
     height: 100% !important;
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
+    /* ★重要：背景を透明にして後ろのビデオが見えるようにする（PC対策） */
+    background-color: transparent !important; 
+    z-index: -1 !important;
 }
 
-/* 5. UIレイヤーが映像を押し下げないようにする */
+/* =========================================
+   3. UIレイヤー（言語選択・ボタン類）
+   ========================================= */
+
 #language-screen, #ui-layer {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 10;
-    pointer-events: none;
+    z-index: 100; /* AR映像より手前に配置 */
+    pointer-events: none; /* 隙間をタップした時にAR側（a-scene）に反応させる */
 }
 
 #language-screen *, #ui-layer * {
-    pointer-events: auto; /* ボタンだけは触れるようにする */
+    pointer-events: auto; /* ボタン類はクリック可能に */
 }
 
-/* 8. 言語選択画面 */
+/* 言語選択画面 */
 .overlay-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.9);
-    z-index: 1000;
+    background: rgba(0, 0, 0, 0.85);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -96,7 +98,7 @@ video {
     gap: 20px;
 }
 
-/* 汎用的なHTMLボタンデザイン */
+/* ボタンのデザイン */
 button {
     padding: 15px 30px;
     font-size: 16px;
@@ -114,14 +116,13 @@ button:active {
     background: #ddd;
 }
 
-/* 17, 18. UIレイヤー（画面右下のボタン配置） */
+/* 右下の丸ボタン */
 .bottom-controls {
     position: fixed;
     bottom: calc(30px + var(--safe-bottom));
     right: 20px;
     display: flex;
     gap: 15px;
-    z-index: 500;
 }
 
 .circle-btn {
@@ -138,7 +139,10 @@ button:active {
     border: 1px solid rgba(0,0,0,0.1);
 }
 
-/* 19. モーダル共通仕様 */
+/* =========================================
+   4. モーダル（詳細情報）
+   ========================================= */
+
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -153,7 +157,7 @@ button:active {
     position: absolute;
     bottom: 0;
     width: 100%;
-    height: 33vh; /* 画面の約1/3に固定 */
+    height: 33vh;
     background: var(--modal-bg);
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
@@ -163,7 +167,7 @@ button:active {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 -5px 15px rgba(0,0,0,0.2); /* 少し影をつけて浮かせます */
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.2);
 }
 
 .modal-overlay:not(.hidden) .modal-window {
@@ -175,23 +179,22 @@ button:active {
     height: 4px;
     background: #ccc;
     border-radius: 2px;
-    margin: 12px auto 0; /* 中央配置 */
-    flex-shrink: 0; /* 棒が潰れないように固定 */
+    margin: 12px auto 0;
+    flex-shrink: 0;
 }
 
 .modal-body {
-    padding: 20px 25px; /* 少し余白を詰めました */
+    padding: 20px 25px;
     flex: 1;
     overflow-y: scroll;
     -webkit-overflow-scrolling: touch;
     color: #333;
     line-height: 1.6;
-    font-size: 15px; /* 小さめ画面でも読みやすいサイズ */
-    word-break: break-word; /* 長い英単語などが枠を突き抜けないようにする */
-    text-align: justify;    /* 日本語の行末を綺麗に揃える（お好みで） */
+    font-size: 15px;
+    word-break: break-word;
+    text-align: justify;
 }
 
-/* ドラッグ中の滑らかさを制御するクラス（JSで切り替えます） */
 .modal-window.dragging {
-    transition: none !important; /* 指に吸い付くようにアニメーションをオフにする */
+    transition: none !important;
 }
