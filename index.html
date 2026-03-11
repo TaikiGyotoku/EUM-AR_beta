@@ -3,68 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>EUM Glass Gregorian Chant AR</title>
+    <title>Neumic AR</title>
+    <!-- A-Frame -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <!-- MindAR for A-Frame -->
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- UI Layer -->
+    <div id="ui-layer">
+        <!-- Language Selection Screen -->
+        <div id="lang-screen">
+            <p class="lang-text">日本語か英語を選んでください<br>Select the language</p>
+            <div class="lang-buttons">
+                <button id="btn-lang-ja">日本語</button>
+                <button id="btn-lang-en">English</button>
+            </div>
+        </div>
 
-    <div id="language-screen" class="overlay-screen">
-        <div class="modal-content">
-            <p>日本語か英語を選んでください<br>Select the language</p>
-            <div class="btn-group">
-                <button id="btn-ja" onclick="selectLanguage('ja')">日本語</button>
-                <button id="btn-en" onclick="selectLanguage('en')">English</button>
+        <!-- Main UI (Info/Credits buttons) -->
+        <div id="main-ui" class="hidden">
+            <button id="btn-credits" class="circle-btn">CREDITS</button>
+            <button id="btn-info" class="circle-btn">INFO</button>
+        </div>
+
+        <!-- Info Modal -->
+        <div id="modal-info" class="modal hidden">
+            <div class="modal-content">
+                <h2 id="info-title"></h2>
+                <div id="info-text"></div>
+            </div>
+        </div>
+
+        <!-- Credits Modal -->
+        <div id="modal-credits" class="modal hidden">
+            <div class="modal-content">
+                <h2>CREDITS</h2>
+                <div id="credits-text"></div>
             </div>
         </div>
     </div>
 
-    <div id="ui-layer" class="hidden">
-        <div class="bottom-controls">
-            <button id="info-btn" class="circle-btn">INFO</button>
-            <button id="credits-btn" class="circle-btn">CREDITS</button>
-        </div>
+    <!-- AR Layer -->
+    <!-- We enable look-controls on camera so gyro continues working, and we stop updating MindAR component after 1st targetFound -->
+    <!-- raycaster allows tapping AR objects -->
+    <a-scene mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: false; uiLoading: no; uiError: no; uiScanning: no" 
+             color-space="sRGB" 
+             renderer="colorManagement: true, physicallyCorrectLights" 
+             vr-mode-ui="enabled: false" 
+             device-orientation-permission-ui="enabled: false">
+             
+        <a-camera position="0 0 0" look-controls="enabled: false" raycaster="objects: .clickable" cursor="fuse: false; rayOrigin: mouse;"></a-camera>
 
-        <div id="modal-overlay" class="modal-overlay hidden">
-            <div id="modal-window" class="modal-window">
-                <div class="drag-bar"></div> 
-                <div id="modal-body" class="modal-body">
-                    </div>
-            </div>
-        </div>
-    </div>
+        <!-- Initial detection anchor -->
+        <a-entity mindar-image-target="targetIndex: 0" id="ar-target"></a-entity>
 
-    <a-scene 
-       mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: false; filterMinCF:0.0001; filterBeta: 0.001; uiScanning: no; uiLoading: no;"
-       color-space="sRGB"
-       renderer="colorManagement: true, physicallyCorrectLights" 
-       vr-mode-ui="enabled: false" 
-       device-orientation-permission-ui="enabled: true">
+        <!-- Fixed world container for our generated content -->
+        <a-entity id="ar-container" visible="false">
+             <!-- Elements injected by app.js -->
+        </a-entity>
         
-        <a-assets>
-            <audio id="audio-kyrie" src="assets/audio/Kyrie.m4a" preload="auto"></audio>
-            <audio id="audio-gloria" src="assets/audio/Gloria.m4a" preload="auto"></audio>
-            <audio id="audio-credo" src="assets/audio/Credo.m4a" preload="auto"></audio>
-            <audio id="audio-sanctus" src="assets/audio/Sanctus.m4a" preload="auto"></audio>
-            <audio id="audio-agnus" src="assets/audio/AgnusDei.m4a" preload="auto"></audio>
-            <audio id="audio-ave" src="assets/audio/AveMaria.m4a" preload="auto"></audio>
-            
-            <img id="icon-stop" src="assets/icons/icon_stop.png">
-        </a-assets>
-
-        <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;" raycaster="far: 10000; objects: .clickable"></a-camera>
-
-        <a-entity id="marker-anchor" mindar-image-target="targetIndex: 0"></a-entity>
-
-        <a-entity id="ar-world-root">
-            <a-sphere position="0 0 0" radius="0.1" color="yellow" class="clickable"></a-sphere>
-            
-            </a-entity>
-
-        <a-entity light="type: ambient; intensity: 1.5"></a-entity>
-        <a-entity light="type: directional; intensity: 0.5; position: 0 1 1"></a-entity>
-
     </a-scene>
 
     <script src="app.js"></script>

@@ -1,236 +1,322 @@
-console.log("%cWelcome developer!", "color: #d4af37; font-size: 60px; font-weight: bold;");
-
-let selectedLanguage = "ja";
+// State management
+let selectedLanguage = null;
 let currentPlayingId = null;
 let isPlaying = false;
-let isFirstFound = false;
+let isInfoOpen = false;
+let isCreditsOpen = false;
+let currentInfoContentId = null;
 
-// 翻訳データ（変更なし）
-const translations = {
-    ja: {
-        chantTitle: "グレゴリオ聖歌について",
-        chantDesc: "1行目：グレゴリオ聖歌は中世の単旋律聖歌です。<br>2行目：西欧音楽の源流とも言われています。<br>3行目：ネウマ譜と呼ばれる特殊な記号で記されます。<br>4行目：このARではガラスに刻まれた譜面を読み取ります。<br>5行目：修道士たちが神に捧げた祈りの声を感じてください。<br>6行目：当時の響きを現代の技術で再現しています。<br>7行目：音の高さや長さが独特なリズムを生み出します。<br>8行目：空間全体が共鳴するような体験を目指しています。<br>9行目：ゆっくりとガラス壁を眺めてみてください。<br>10行目：スクロールして最後まで読めればテスト成功です。",
-        credits: "1行目：【制作チーム】<br>2行目：EUM Glass AR Project<br>3行目：ディレクション：Taiki G.<br>4行目：エンジニアリング協力：AIアシスタント<br>5行目：音源提供：聖歌隊アーカイブ<br>6行目：デザイン協力：デザイン賞受賞チーム<br>7行目：技術：MindAR & A-Frame<br>8行目：公開プラットフォーム：Cloudflare Pages<br>9行目：Copyright 2024 EUM Project<br>10行目：全ての権利は制作チームに帰属します。",
-        songs: {
-            kyrie: "Kyrie: 憐れみの賛歌",
-            gloria: "Gloria: 栄光の賛歌",
-            credo: "Credo: 信仰宣言",
-            sanctus: "Sanctus: 感謝の賛歌",
-            agnus: "Agnus Dei: 神の小羊",
-            ave: "Ave Maria: 聖母マリアへの祈り"
-        }
+let isArInitialized = false;
+
+// Audio context and tracking
+let audioCtx = null;
+let audioBuffers = {};
+let currentSource = null;
+let audioStartTime = 0;
+
+// Localization data
+const dict = {
+    "ja": {
+        "info_title": "INFO",
+        "credits": "プロジェクトチーム\n制作・開発: [ダミーテキスト]\n\n各種SNSやWebサイト\nhttps://example.com",
+        "content_gregorian": "グレゴリオ聖歌は、西欧カトリック教会の単旋律の聖歌です。ネウマ譜と呼ばれる特有の記譜法で記されています。",
+        "content_kyrie": "キリエ（Kyrie）は、憐れみを乞う祈りです。「主よ、憐れみたまえ」という意味を持ちます。",
+        "content_gloria": "グロリア（Gloria）は、神の栄光を讃える賛歌です。",
+        "content_credo": "クレド（Credo）は、信仰宣言です。ニケア・コンスタンティノープル信条に基づく長大なテキストが特徴です。",
+        "content_sanctus": "サンクトゥス（Sanctus）は、感謝の賛歌であり「聖なるかな」と神を讃美します。",
+        "content_agnusdei": "アニュス・デイ（Agnus Dei）は、「神の小羊」を意味する平和を願う祈りです。",
+        "content_avemaria": "アヴェ・マリア（Ave Maria）は、聖母マリアへの祈りであり、受胎告知の言葉から始まります。"
     },
-    en: {
-        chantTitle: "About Gregorian Chant",
-        chantDesc: "Line 1: Gregorian chant is central to Western music history.<br>Line 2: It is a monophonic, unaccompanied sacred song.<br>Line 3: The notation used here is called Neumatic notation.<br>Line 4: This AR project enhances the glass-etched chants.<br>Line 5: Listen to the prayers offered by medieval monks.<br>Line 6: Experience the fusion of ancient art and modern AR.<br>Line 7: The melodies are based on eight church modes.<br>Line 8: Please feel the resonance within this space.<br>Line 9: Take your time to explore each musical notation.<br>Line 10: Scroll down to ensure you can read this final line.",
-        credits: "Line 1: [Production Team]<br>Line 2: EUM Glass AR Project<br>3rd line: Directed by Taiki G.<br>4th line: Engineering by AI Assistant<br>5th line: Audio by Schola Cantorum<br>6th line: Design by Award-winning team<br>7th line: Built with MindAR & A-Frame<br>8th line: Hosted on Cloudflare Pages<br>9th line: Copyright 2024 EUM Project<br>10th line: All rights reserved.",
-        songs: {
-            kyrie: "Kyrie: Lord, have mercy",
-            gloria: "Gloria: Glory to God",
-            credo: "Credo: I believe",
-            sanctus: "Sanctus: Holy, Holy",
-            agnus: "Agnus Dei: Lamb of God",
-            ave: "Ave Maria: Hail Mary"
-        }
+    "en": {
+        "info_title": "INFO",
+        "credits": "Project Team\nProduction & Development: [Dummy Text]\n\nLinks & SNS\nhttps://example.com",
+        "content_gregorian": "Gregorian chant is the central tradition of Western plainchant, a form of monophonic, unaccompanied sacred song of the western Roman Catholic Church.",
+        "content_kyrie": "Kyrie is a traditional prayer of gathering or penitence, meaning 'Lord, have mercy'.",
+        "content_gloria": "Gloria is a celebratory hymn of praise to God.",
+        "content_credo": "Credo is a profession of faith, based on the Niceno-Constantinopolitan Creed.",
+        "content_sanctus": "Sanctus is a hymn of thanksgiving, exclaiming 'Holy, Holy, Holy'.",
+        "content_agnusdei": "Agnus Dei means 'Lamb of God', and it is a prayer for peace and mercy.",
+        "content_avemaria": "Ave Maria is a traditional Catholic prayer asking for the intercession of the Blessed Virgin Mary."
     }
 };
 
-/**
- * 1. 言語選択とAR起動
- */
-function selectLanguage(lang) {
-    selectedLanguage = lang;
+const songsConfig = [
+    { id: 'kyrie', file: 'assets/audio/Kyrie.m4a', icon: 'assets/icons/icon_play1.png', stopIcon: 'assets/icons/icon_stop.png', 
+      patterns: [1,2,1,2,1,2,1,2,1,1,1], fixedRectCount: 1, 
+      dummyPos: {x: -1, y: 1.2, z: 0} },
+    { id: 'gloria', file: 'assets/audio/Gloria.m4a', icon: 'assets/icons/icon_play2.png', stopIcon: 'assets/icons/icon_stop.png',
+      patterns: [1,2,1,1,2,1,1,1,1,1,1,2,1,1,1,1,1,2,1,2,1,1,1,2,1,2,1,1,2,1], fixedRectCount: 1,
+      dummyPos: {x: 0, y: 1.2, z: 0} },
+    { id: 'credo', file: 'assets/audio/Credo.m4a', icon: 'assets/icons/icon_play3.png', stopIcon: 'assets/icons/icon_stop.png',
+      patterns: [1,1,1,1,2,1,1,1,2,1,1,1,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,1,1,2,1,2,1,1,2,1,1], fixedRectCount: 2,
+      dummyPos: {x: 1, y: 1.2, z: 0} },
+    { id: 'sanctus', file: 'assets/audio/Sanctus.m4a', icon: 'assets/icons/icon_play4.png', stopIcon: 'assets/icons/icon_stop.png',
+      patterns: [1,1,1,2,1,2,1,2,1,2,1], fixedRectCount: 1,
+      dummyPos: {x: -1, y: 0.2, z: 0} },
+    { id: 'agnusdei', file: 'assets/audio/AgnusDei.m4a', icon: 'assets/icons/icon_play5.png', stopIcon: 'assets/icons/icon_stop.png',
+      patterns: [1,1,2,1,1,2,1,2,1,1,2], fixedRectCount: 1,
+      dummyPos: {x: 0, y: 0.2, z: 0} },
+    { id: 'avemaria', file: 'assets/audio/AveMaria.m4a', icon: 'assets/icons/icon_play6.png', stopIcon: 'assets/icons/icon_stop.png',
+      patterns: [1,1,1,2,2,1,2,1], fixedRectCount: 1,
+      dummyPos: {x: 1, y: 0.2, z: 0} }
+];
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    const langScreen = document.getElementById('lang-screen');
+    const btnJa = document.getElementById('btn-lang-ja');
+    const btnEn = document.getElementById('btn-lang-en');
     
-    document.getElementById('language-screen').classList.add('hidden');
-    document.getElementById('ui-layer').classList.remove('hidden');
+    const mainUi = document.getElementById('main-ui');
+    const btnInfo = document.getElementById('btn-info');
+    const btnCredits = document.getElementById('btn-credits');
+    
+    const modalInfo = document.getElementById('modal-info');
+    const infoTitle = document.getElementById('info-title');
+    const infoText = document.getElementById('info-text');
+    
+    const modalCredits = document.getElementById('modal-credits');
+    const creditsText = document.getElementById('credits-text');
 
     const sceneEl = document.querySelector('a-scene');
-    
-    const startAR = () => {
-        const arSystem = sceneEl.systems['mindar-image-system'];
-        if (arSystem) {
-            console.log("MindAR starting...");
-            arSystem.start(); 
+    const arTarget = document.getElementById('ar-target');
+    const arContainer = document.getElementById('ar-container');
 
-            // ★【PC・スマホ表示対策】
-            // カメラ起動の1秒後にリサイズイベントを強制発火させ、
-            // 黒画面や表示ズレを解消します
-            setTimeout(() => {
-                window.dispatchEvent(new Event('resize'));
-            }, 1000);
+    function setupAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            loadAudioFiles();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
+    async function loadAudioFiles() {
+        for (const song of songsConfig) {
+            try {
+                const response = await fetch(song.file);
+                if(response.ok) {
+                    const arrayBuffer = await response.arrayBuffer();
+                    audioBuffers[song.id] = await audioCtx.decodeAudioData(arrayBuffer);
+                } else {
+                    console.warn("Could not load", song.file);
+                }
+            } catch (e) {
+                console.warn("Failed to decode", song.file, e);
+            }
+        }
+    }
+
+    const selectLang = (lang) => {
+        selectedLanguage = lang;
+        langScreen.classList.add('hidden');
+        mainUi.classList.remove('hidden');
+        setupAudio();
+        
+        // Convert plain text to HTML with breaks for formatting
+        creditsText.innerHTML = dict[lang]["credits"].replace(/\n/g, "<br>");
+        infoTitle.innerText = dict[lang]["info_title"];
+
+        // We use autoStart: false, which means MindAR must be started explicitly
+        if (sceneEl.systems && sceneEl.systems["mindar-image-system"]) {
+            sceneEl.systems["mindar-image-system"].start();
+        } else {
+            // Give it time to load if component isn't ready
+            sceneEl.addEventListener('loaded', () => {
+                setTimeout(() => sceneEl.systems["mindar-image-system"].start(), 500);
+            });
         }
     };
 
-    if (sceneEl.hasLoaded) {
-        startAR();
-    } else {
-        sceneEl.addEventListener('loaded', startAR);
-    }
-}
+    btnJa.addEventListener('click', () => selectLang('ja'));
+    btnEn.addEventListener('click', () => selectLang('en'));
 
-/**
- * 2. マーカー認識と位置固定ロジック
- */
-const markerAnchor = document.getElementById('marker-anchor');
-const arWorldRoot = document.getElementById('ar-world-root');
+    const toggleInfo = (e) => {
+        e.stopPropagation();
+        if (isCreditsOpen) closeModal(modalCredits, () => isCreditsOpen = false);
+        if (!isInfoOpen) {
+            currentInfoContentId = isPlaying && currentPlayingId ? "content_" + currentPlayingId : "content_gregorian";
+            infoText.innerText = dict[selectedLanguage][currentInfoContentId];
+            
+            modalInfo.classList.add('open');
+            isInfoOpen = true;
+        } else {
+            closeModal(modalInfo, () => isInfoOpen = false);
+        }
+    };
 
-if (markerAnchor) {
-    markerAnchor.addEventListener("targetFound", event => {
-        if (!isFirstFound) {
-            console.log("Marker Found! Fixing position...");
+    const toggleCredits = (e) => {
+        e.stopPropagation();
+        if (isInfoOpen) closeModal(modalInfo, () => isInfoOpen = false);
+        if (!isCreditsOpen) {
+            modalCredits.classList.add('open');
+            isCreditsOpen = true;
+        } else {
+            closeModal(modalCredits, () => isCreditsOpen = false);
+        }
+    };
 
-            // 現在のマトリックスを最新の状態に更新
-            markerAnchor.object3D.updateMatrixWorld();
+    const closeModal = (modal, stateSetter) => {
+        modal.classList.remove('open');
+        stateSetter();
+    };
 
-            const worldPos = new THREE.Vector3();
-            const worldQuat = new THREE.Quaternion();
-            const worldScale = new THREE.Vector3();
+    btnInfo.addEventListener('click', toggleInfo);
+    btnCredits.addEventListener('click', toggleCredits);
 
-            // マーカーの現在の世界座標・回転・スケールを分解取得
-            markerAnchor.object3D.matrixWorld.decompose(worldPos, worldQuat, worldScale);
-
-            // 固定用のルート要素(ar-world-root)に座標をコピー
-            arWorldRoot.object3D.position.copy(worldPos);
-            arWorldRoot.object3D.quaternion.copy(worldQuat);
-            // スケールも合わせる（必要に応じて）
-            arWorldRoot.object3D.scale.set(1, 1, 1); 
-
-            // ★【重要】スキャンアニメーションを停止し、再スキャンを防ぐ
-            const sceneEl = document.querySelector('a-scene');
-            const arSystem = sceneEl.systems['mindar-image-system'];
-            if (arSystem) {
-                arSystem.stopScanning(); // これで、マーカーが外れてもスキャン画面に戻りません
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                if (modal.id === 'modal-info') closeModal(modalInfo, () => isInfoOpen = false);
+                if (modal.id === 'modal-credits') closeModal(modalCredits, () => isCreditsOpen = false);
             }
+        });
+    });
 
-            isFirstFound = true;
-            console.log("AR Content Fixed at:", worldPos);
+    songsConfig.forEach(song => {
+        const sEntity = document.createElement('a-entity');
+        sEntity.setAttribute('position', `${song.dummyPos.x} ${song.dummyPos.y} ${song.dummyPos.z}`);
+        
+        const btn = document.createElement('a-image');
+        btn.setAttribute('src', song.icon);
+        btn.setAttribute('width', '0.3');
+        btn.setAttribute('height', '0.3');
+        btn.setAttribute('position', '0 0.4 0');
+        btn.classList.add('clickable');
+        
+        btn.addEventListener('click', () => handleSongClick(song));
+        sEntity.appendChild(btn);
+        song.btnEntity = btn; // Keep reference to change icon easily
+
+        for(let i=0; i<song.fixedRectCount; i++) {
+            const fRect = document.createElement('a-plane');
+            fRect.setAttribute('color', '#888888');
+            fRect.setAttribute('opacity', '0.5');
+            fRect.setAttribute('width', '0.8');
+            fRect.setAttribute('height', '0.15');
+            fRect.setAttribute('position', `0 ${-0.1 - (i*0.2)} -0.01`);
+            fRect.setAttribute('material', 'transparent: true');
+            sEntity.appendChild(fRect);
+        }
+
+        song.playPatterns = [];
+        let timerStart = 0;
+        song.patterns.forEach((count, patternIdx) => {
+            const patData = {
+                startTime: timerStart,
+                endTime: timerStart + 2.0, // dummy 2s threshold for each pattern
+                entities: []
+            };
+            for(let i=0; i<count; i++) {
+                const pRect = document.createElement('a-plane');
+                pRect.setAttribute('color', '#FFD700'); // Yellow
+                pRect.setAttribute('opacity', '0.6');
+                pRect.setAttribute('width', '0.7');
+                pRect.setAttribute('height', '0.12');
+                pRect.setAttribute('position', `${(i - (count-1)/2)*0.75} ${-0.1 - (patternIdx % 3)*0.2} 0.01`);
+                pRect.setAttribute('visible', 'false');
+                pRect.setAttribute('material', 'transparent: true');
+                sEntity.appendChild(pRect);
+                patData.entities.push(pRect);
+            }
+            song.playPatterns.push(patData);
+            timerStart += 2.0;
+        });
+
+        arContainer.appendChild(sEntity);
+    });
+
+    arTarget.addEventListener('targetFound', () => {
+        if (!isArInitialized) {
+            isArInitialized = true;
+            // The object3D.matrixWorld contains the absolute transformation of the target
+            const pos = new THREE.Vector3();
+            const quat = new THREE.Quaternion();
+            const scale = new THREE.Vector3();
+            arTarget.object3D.matrixWorld.decompose(pos, quat, scale);
+
+            arContainer.object3D.position.copy(pos);
+            arContainer.object3D.quaternion.copy(quat);
+            arContainer.object3D.scale.copy(scale);
+            
+            arContainer.setAttribute('visible', 'true');
         }
     });
-}
 
-/**
- * 3. オーディオ制御（変更なし）
- */
-function handlePlayControl(id) {
-    if (currentPlayingId === id) {
-        stopAll();
-    } else {
-        playSong(id);
+    function stopSong() {
+        if (currentSource) {
+            try { currentSource.stop(); } catch(e){}
+            currentSource = null;
+        }
+        
+        if (currentPlayingId) {
+            const song = songsConfig.find(s => s.id === currentPlayingId);
+            if (song) {
+                song.btnEntity.setAttribute('src', song.icon);
+                song.playPatterns.forEach(pat => pat.entities.forEach(en => en.setAttribute('visible', 'false')));
+            }
+        }
+        
+        isPlaying = false;
+        currentPlayingId = null;
     }
-}
 
-function playSong(id) {
-    stopAll();
-    currentPlayingId = id;
-    isPlaying = true;
-    const audio = document.getElementById(`audio-${id}`);
-    if (audio) {
-        audio.play().catch(e => console.error("Audio play failed:", e));
+    function handleSongClick(clickedSong) {
+        if (!audioCtx) return;
+
+        if (isPlaying && currentPlayingId === clickedSong.id) {
+            stopSong(); // Stop playing condition 1
+            return;
+        }
+
+        if (isPlaying) {
+            stopSong(); // Stop playing condition 2 (other song pressed)
+        }
+
+        currentPlayingId = clickedSong.id;
+        isPlaying = true;
+        
+        clickedSong.btnEntity.setAttribute('src', clickedSong.stopIcon); // Change icon to Stop
+        
+        if (audioBuffers[clickedSong.id]) {
+            currentSource = audioCtx.createBufferSource();
+            currentSource.buffer = audioBuffers[clickedSong.id];
+            currentSource.connect(audioCtx.destination);
+            currentSource.onended = () => { stopSong(); }; // Condition 3 (track ended)
+            currentSource.start(0);
+            audioStartTime = audioCtx.currentTime;
+        } else {
+            console.warn("Audio buffer missing, simulating 10 seconds of playback for testing: " + clickedSong.id);
+            audioStartTime = audioCtx.currentTime;
+            
+            // Dummy logic to reset after some time
+            // To allow correct sync, we use audioCtx time
+            setTimeout(() => {
+                if(currentPlayingId === clickedSong.id) stopSong();
+            }, 10000);
+        }
     }
-    requestAnimationFrame(updateFrameSync);
-}
 
-function stopAll() {
-    const audios = document.querySelectorAll('audio');
-    audios.forEach(a => {
-        a.pause();
-        a.currentTime = 0;
+    AFRAME.registerComponent('ar-playback-sync', {
+        tick: function() {
+            if (!isPlaying || !currentPlayingId) return;
+            const song = songsConfig.find(s => s.id === currentPlayingId);
+            if (!song) return;
+            
+            // Use WebAudio currentTime for precise animation sync
+            const timeElapsed = audioCtx ? (audioCtx.currentTime - audioStartTime) : 0;
+            
+            song.playPatterns.forEach(pat => {
+                const isActive = (timeElapsed >= pat.startTime && timeElapsed < pat.endTime);
+                pat.entities.forEach(en => {
+                    if (en.getAttribute('visible') !== isActive) {
+                        en.setAttribute('visible', isActive);
+                    }
+                });
+            });
+        }
     });
-    isPlaying = false;
-    currentPlayingId = null;
-}
 
-function updateFrameSync() {
-    if (!isPlaying) return;
-    const audio = document.getElementById(`audio-${currentPlayingId}`);
-    if (audio && audio.ended) {
-        stopAll();
-        return;
-    }
-    requestAnimationFrame(updateFrameSync);
-}
-
-/**
- * 4. UI・モーダル制御（修正済み）
- */
-document.getElementById('info-btn').addEventListener('click', () => {
-    const body = document.getElementById('modal-body');
-    if (currentPlayingId) {
-        body.innerHTML = `<h3>${translations[selectedLanguage].songs[currentPlayingId]}</h3><p>${translations[selectedLanguage].chantDesc}</p>`;
-    } else {
-        body.innerHTML = `<h3>${translations[selectedLanguage].chantTitle}</h3><p>${translations[selectedLanguage].chantDesc}</p>`;
-    }
-    document.getElementById('modal-overlay').classList.remove('hidden');
-    requestAnimationFrame(() => { body.scrollTop = 0; });
-});
-
-document.getElementById('credits-btn').addEventListener('click', () => {
-    const body = document.getElementById('modal-body');
-    body.innerHTML = `<h3>Credits</h3><p>${translations[selectedLanguage].credits}</p>`;
-    document.getElementById('modal-overlay').classList.remove('hidden');
-    requestAnimationFrame(() => { body.scrollTop = 0; });
-});
-
-/**
- * 5. モーダルのスワイプ閉鎖ロジック
- */
-const modalWindow = document.getElementById('modal-window');
-const modalOverlay = document.getElementById('modal-overlay');
-let startY = 0;
-let currentY = 0;
-let isDragging = false;
-
-function closeModal() {
-    modalOverlay.classList.add('hidden');
-    modalWindow.style.transform = '';
-    currentY = 0;
-}
-
-modalWindow.addEventListener('touchstart', (e) => {
-    startY = e.touches[0].clientY;
-    modalWindow.classList.add('dragging');
-    isDragging = true;
-}, {passive: true});
-
-modalWindow.addEventListener('touchmove', (e) => {
-    if (!isDragging) return;
-    currentY = e.touches[0].clientY - startY;
-    if (currentY > 0) {
-        modalWindow.style.transform = `translateY(${currentY}px)`;
-    }
-}, {passive: true});
-
-modalWindow.addEventListener('touchend', () => {
-    isDragging = false;
-    modalWindow.classList.remove('dragging');
-    if (currentY > 80) {
-        closeModal();
-    } else {
-        modalWindow.style.transform = '';
-    }
-});
-
-// PCでのドラッグ操作
-modalWindow.addEventListener('mousedown', (e) => {
-    startY = e.clientY;
-    modalWindow.classList.add('dragging');
-    isDragging = true;
-});
-
-window.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
-    currentY = e.clientY - startY;
-    if (currentY > 0) modalWindow.style.transform = `translateY(${currentY}px)`;
-});
-
-window.addEventListener('mouseup', () => {
-    if (!isDragging) return;
-    isDragging = false;
-    modalWindow.classList.remove('dragging');
-    if (currentY > 80) closeModal();
-    else modalWindow.style.transform = '';
-});
-
-modalOverlay.addEventListener('click', (e) => {
-    if (e.target.id === 'modal-overlay') closeModal();
+    sceneEl.setAttribute('ar-playback-sync', '');
 });

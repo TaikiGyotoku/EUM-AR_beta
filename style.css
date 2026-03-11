@@ -1,200 +1,137 @@
-/* =========================================
-   1. 基本設定と全画面固定
-   ========================================= */
-:root {
-    --safe-bottom: env(safe-area-inset-bottom);
-    --modal-bg: rgba(255, 255, 255, 0.95);
-}
-
-html, body {
+body, html {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background-color: #000; /* 読み込み前の隙間を黒にする */
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    pointer-events: none;
+}
+
+#lang-screen {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    pointer-events: auto;
+    z-index: 100;
+}
+
+.lang-text {
+    color: white;
+    text-align: center;
+    font-size: 1.2rem;
+    line-height: 1.5;
+    margin-bottom: 2rem;
+}
+
+.lang-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.lang-buttons button {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    background: #fff;
+    color: #333;
+    transition: transform 0.1s;
+}
+
+.lang-buttons button:active {
+    transform: scale(0.95);
 }
 
 .hidden {
     display: none !important;
 }
 
-/* =========================================
-   2. ARシーン・カメラ映像（最重要）
-   ========================================= */
-
-/* A-Frameの舞台 */
-a-scene {
-    width: 100vw !important;
-    height: 100vh !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    z-index: 0;
-}
-
-/* マーカー読み取り中に出る「video」要素を全画面に */
-video {
-    width: 100vw !important;
-    height: 100vh !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    /* そのままの縮尺を保ちつつ、画面を埋めるまでズーム（クリップ解消） */
-    object-fit: cover !important; 
-    z-index: -2 !important; /* 一番後ろ */
-    display: block !important;
-}
-
-/* A-Frameが生成する描画キャンバス */
-.a-canvas {
-    width: 100% !important;
-    height: 100% !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    /* ★重要：背景を透明にして後ろのビデオが見えるようにする（PC対策） */
-    background-color: transparent !important; 
-    z-index: -1 !important;
-}
-
-/* =========================================
-   3. UIレイヤー（言語選択・ボタン類）
-   ========================================= */
-
-#language-screen, #ui-layer {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 100; /* AR映像より手前に配置 */
-    pointer-events: none; /* 隙間をタップした時にAR側（a-scene）に反応させる */
-}
-
-#language-screen *, #ui-layer * {
-    pointer-events: auto; /* ボタン類はクリック可能に */
-}
-
-/* 言語選択画面 */
-.overlay-screen {
-    background: rgba(0, 0, 0, 0.85);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    color: white;
-}
-
-.modal-content p {
-    font-size: 18px;
-    margin-bottom: 30px;
-    line-height: 1.6;
-}
-
-.btn-group {
-    display: flex;
-    gap: 20px;
-}
-
-/* ボタンのデザイン */
-button {
-    padding: 15px 30px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    border: none;
-    border-radius: 12px;
-    background: #fff;
-    color: #333;
-    transition: transform 0.1s, background 0.2s;
-}
-
-button:active {
-    transform: scale(0.95);
-    background: #ddd;
-}
-
-/* 右下の丸ボタン */
-.bottom-controls {
-    position: fixed;
-    bottom: calc(30px + var(--safe-bottom));
-    right: 20px;
-    display: flex;
-    gap: 15px;
-}
-
 .circle-btn {
+    position: absolute;
+    bottom: calc(env(safe-area-inset-bottom, 20px) + 20px);
     width: 70px;
     height: 70px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.85);
-    color: #333;
-    font-size: 11px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    border: 1px solid rgba(0,0,0,0.1);
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid #ccc;
+    font-weight: bold;
+    font-size: 0.8rem;
+    cursor: pointer;
+    pointer-events: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    transition: transform 0.1s;
 }
 
-/* =========================================
-   4. モーダル（詳細情報）
-   ========================================= */
-
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 600;
+.circle-btn:active {
+    transform: scale(0.95);
 }
 
-.modal-window {
+#btn-info {
+    right: 20px;
+}
+
+#btn-credits {
+    right: 110px;
+}
+
+.modal {
     position: absolute;
-    bottom: 0;
+    inset: 0;
+    background: rgba(0, 0, 0, 0);
+    pointer-events: none;
+    display: flex;
+    align-items: flex-end;
+    transition: background 0.3s ease;
+    z-index: 50;
+}
+
+.modal.open {
+    background: rgba(0, 0, 0, 0.5);
+    pointer-events: auto;
+}
+
+.modal-content {
     width: 100%;
-    height: 33vh;
-    background: var(--modal-bg);
+    max-height: 70vh;
+    background: white;
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
-    padding-bottom: calc(10px + var(--safe-bottom));
+    padding: 24px;
+    padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 24px);
+    overflow-y: auto;
+    box-sizing: border-box;
     transform: translateY(100%);
     transition: transform 0.3s ease-out;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 -5px 15px rgba(0,0,0,0.2);
 }
 
-.modal-overlay:not(.hidden) .modal-window {
+.modal.open .modal-content {
     transform: translateY(0);
 }
 
-.drag-bar {
-    width: 40px;
-    height: 4px;
-    background: #ccc;
-    border-radius: 2px;
-    margin: 12px auto 0;
-    flex-shrink: 0;
+.modal h2 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
 }
 
-.modal-body {
-    padding: 20px 25px;
-    flex: 1;
-    overflow-y: scroll;
-    -webkit-overflow-scrolling: touch;
-    color: #333;
-    line-height: 1.6;
-    font-size: 15px;
-    word-break: break-word;
-    text-align: justify;
-}
-
-.modal-window.dragging {
-    transition: none !important;
+.modal p {
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
 }
