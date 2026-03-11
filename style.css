@@ -1,3 +1,4 @@
+/* CSS Reset and Base styling */
 body, html {
     margin: 0;
     padding: 0;
@@ -8,6 +9,7 @@ body, html {
     -webkit-tap-highlight-color: transparent;
 }
 
+/* UI Layer completely independent from AR */
 #ui-layer {
     position: absolute;
     top: 0;
@@ -15,18 +17,19 @@ body, html {
     width: 100%;
     height: 100%;
     z-index: 10;
-    pointer-events: none;
+    pointer-events: none; /* Let touches bleed through to AR space by default */
 }
 
+/* Language Selection Screen */
 #lang-screen {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.85); /* Dark transparent background */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    pointer-events: auto;
+    pointer-events: auto; /* Catch taps on the UI layer */
     z-index: 100;
 }
 
@@ -59,10 +62,12 @@ body, html {
     transform: scale(0.95);
 }
 
+/* General Utilities */
 .hidden {
     display: none !important;
 }
 
+/* Circular UI Buttons */
 .circle-btn {
     position: absolute;
     bottom: calc(env(safe-area-inset-bottom, 20px) + 20px);
@@ -74,7 +79,7 @@ body, html {
     font-weight: bold;
     font-size: 0.8rem;
     cursor: pointer;
-    pointer-events: auto;
+    pointer-events: auto; /* Buttons are tappable */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     transition: transform 0.1s;
 }
@@ -83,6 +88,7 @@ body, html {
     transform: scale(0.95);
 }
 
+/* Positioning */
 #btn-info {
     right: 20px;
 }
@@ -91,31 +97,32 @@ body, html {
     right: 110px;
 }
 
+/* Modals */
 .modal {
     position: absolute;
     inset: 0;
     background: rgba(0, 0, 0, 0);
     pointer-events: none;
     display: flex;
-    align-items: flex-end;
+    align-items: flex-end; /* Slide in from bottom */
     transition: background 0.3s ease;
     z-index: 50;
 }
 
 .modal.open {
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparent backdrop */
     pointer-events: auto;
 }
 
 .modal-content {
     width: 100%;
-    max-height: 70vh;
+    max-height: 70vh; /* Do not exceed screen height */
     background: white;
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
     padding: 24px;
-    padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 24px);
-    overflow-y: auto;
+    padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 24px); /* Safe area support */
+    overflow-y: auto; /* Scrollable content */
     box-sizing: border-box;
     transform: translateY(100%);
     transition: transform 0.3s ease-out;
@@ -134,47 +141,4 @@ body, html {
 .modal p {
     line-height: 1.5;
     margin-bottom: 0.5rem;
-}
-
-#mindar-ui-loading, #mindar-ui-scanning {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.5); /* semi-transparent to help see the loading/scanning state over camera */
-    z-index: 2;
-    pointer-events: none;
-}
-
-#mindar-ui-loading.hidden, #mindar-ui-scanning.hidden {
-    display: none !important;
-}
-
-.loader {
-    color: white;
-    font-size: 1.2rem;
-    font-weight: bold;
-}
-
-.scanning-inner {
-    width: 60vw;
-    height: 60vw;
-    border: 2px solid rgba(255, 255, 255, 0.5);
-    position: relative;
-    border-radius: 10px;
-}
-
-.scanline {
-    position: absolute;
-    width: 100%;
-    height: 4px;
-    background: white;
-    box-shadow: 0 0 10px white;
-    animation: move 2s linear infinite;
-}
-
-@keyframes move {
-    0%, 100% { top: 0% }
-    50% { top: calc(100% - 4px) }
 }

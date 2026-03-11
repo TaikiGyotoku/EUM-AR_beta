@@ -4,15 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Neumic AR</title>
+
     <!-- A-Frame -->
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+
     <!-- MindAR for A-Frame -->
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+
+    <!-- UI Styles -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- UI Layer -->
+    <!-- HTML Overlay (UI Layer) -->
     <div id="ui-layer">
+        
         <!-- Language Selection Screen -->
         <div id="lang-screen">
             <p class="lang-text">日本語か英語を選んでください<br>Select the language</p>
@@ -22,13 +27,13 @@
             </div>
         </div>
 
-        <!-- Main UI (Info/Credits buttons) -->
+        <!-- Main UI (Shown after Language Selection) -->
         <div id="main-ui" class="hidden">
             <button id="btn-credits" class="circle-btn">CREDITS</button>
             <button id="btn-info" class="circle-btn">INFO</button>
         </div>
 
-        <!-- Info Modal -->
+        <!-- INFO Modal -->
         <div id="modal-info" class="modal hidden">
             <div class="modal-content">
                 <h2 id="info-title"></h2>
@@ -36,45 +41,38 @@
             </div>
         </div>
 
-        <!-- Credits Modal -->
+        <!-- CREDITS Modal -->
         <div id="modal-credits" class="modal hidden">
             <div class="modal-content">
                 <h2>CREDITS</h2>
                 <div id="credits-text"></div>
             </div>
         </div>
-        <!-- Custom MindAR Overlays -->
-        <div id="mindar-ui-loading" class="hidden">
-            <div class="loader">Loading...</div>
-        </div>
-        <div id="mindar-ui-scanning" class="hidden">
-            <div class="scanning-inner">
-                <div class="scanline"></div>
-            </div>
-        </div>
+
     </div>
 
-    <!-- AR Layer -->
-    <!-- We enable look-controls on camera so gyro continues working, and we stop updating MindAR component after 1st targetFound -->
-    <!-- raycaster allows tapping AR objects -->
-    <a-scene mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: false; uiLoading: #mindar-ui-loading; uiScanning: #mindar-ui-scanning" 
-             color-space="sRGB" 
-             renderer="colorManagement: true, physicallyCorrectLights" 
-             vr-mode-ui="enabled: false" 
-             device-orientation-permission-ui="enabled: false">
+    <!-- AR Scene Layer -->
+    <a-scene 
+        mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: false; uiLoading: no; uiError: no; uiScanning: no" 
+        color-space="sRGB" 
+        renderer="colorManagement: true, physicallyCorrectLights" 
+        vr-mode-ui="enabled: false" 
+        device-orientation-permission-ui="enabled: false">
              
+        <!-- Camera without default controls, Raycaster enabled for clicks -->
         <a-camera position="0 0 0" look-controls="enabled: false" raycaster="objects: .clickable" cursor="fuse: false; rayOrigin: mouse;"></a-camera>
 
         <!-- Initial detection anchor -->
         <a-entity mindar-image-target="targetIndex: 0" id="ar-target"></a-entity>
 
-        <!-- Fixed world container for our generated content -->
+        <!-- Fixed world container for dynamically generated content -->
         <a-entity id="ar-container" visible="false">
              <!-- Elements injected by app.js -->
         </a-entity>
         
     </a-scene>
 
+    <!-- Core App Logic -->
     <script src="app.js"></script>
 </body>
 </html>

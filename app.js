@@ -40,26 +40,66 @@ const dict = {
     }
 };
 
+// --- ダミー設定データ (現地調整用) ---
+// すべての座標、サイズ、回転情報をここに集約しています。
+// x, y, zなど自由に設定可能です。
+const sharedConfig = {
+    fixedRect: { color: '#888888', opacity: 0.5 },
+    playRect: { color: '#FFD700', opacity: 0.6 }
+};
+
 const songsConfig = [
-    { id: 'kyrie', file: 'assets/audio/Kyrie.m4a', icon: 'assets/icons/icon_play1.png', stopIcon: 'assets/icons/icon_stop.png', 
-      patterns: [1,2,1,2,1,2,1,2,1,1,1], fixedRectCount: 1, 
-      dummyPos: {x: -1, y: 1.2, z: 0} },
-    { id: 'gloria', file: 'assets/audio/Gloria.m4a', icon: 'assets/icons/icon_play2.png', stopIcon: 'assets/icons/icon_stop.png',
-      patterns: [1,2,1,1,2,1,1,1,1,1,1,2,1,1,1,1,1,2,1,2,1,1,1,2,1,2,1,1,2,1], fixedRectCount: 1,
-      dummyPos: {x: 0, y: 1.2, z: 0} },
-    { id: 'credo', file: 'assets/audio/Credo.m4a', icon: 'assets/icons/icon_play3.png', stopIcon: 'assets/icons/icon_stop.png',
-      patterns: [1,1,1,1,2,1,1,1,2,1,1,1,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,1,1,2,1,2,1,1,2,1,1], fixedRectCount: 2,
-      dummyPos: {x: 1, y: 1.2, z: 0} },
-    { id: 'sanctus', file: 'assets/audio/Sanctus.m4a', icon: 'assets/icons/icon_play4.png', stopIcon: 'assets/icons/icon_stop.png',
-      patterns: [1,1,1,2,1,2,1,2,1,2,1], fixedRectCount: 1,
-      dummyPos: {x: -1, y: 0.2, z: 0} },
-    { id: 'agnusdei', file: 'assets/audio/AgnusDei.m4a', icon: 'assets/icons/icon_play5.png', stopIcon: 'assets/icons/icon_stop.png',
-      patterns: [1,1,2,1,1,2,1,2,1,1,2], fixedRectCount: 1,
-      dummyPos: {x: 0, y: 0.2, z: 0} },
-    { id: 'avemaria', file: 'assets/audio/AveMaria.m4a', icon: 'assets/icons/icon_play6.png', stopIcon: 'assets/icons/icon_stop.png',
-      patterns: [1,1,1,2,2,1,2,1], fixedRectCount: 1,
-      dummyPos: {x: 1, y: 0.2, z: 0} }
+    { 
+        id: 'kyrie', file: 'assets/audio/Kyrie.m4a', icon: 'assets/icons/icon_play1.png', stopIcon: 'assets/icons/icon_stop.png', 
+        parentPos: '-1 1.2 0', parentRot: '0 0 0', parentScale: '1 1 1',
+        btnPos: '0 0.4 0', btnRot: '0 0 0', btnScale: '0.3 0.3 1',
+        fixedRects: [ { pos: '0 -0.1 -0.01', rot: '0 0 0', scale: '0.8 0.15 1' } ],
+        patterns: [1,2,1,2,1,2,1,2,1,1,1], patternDuration: 2.0, playRectBasePos: {x: 0, y: -0.1, z: 0.01}, playRectScale: '0.7 0.12 1'
+    },
+    { 
+        id: 'gloria', file: 'assets/audio/Gloria.m4a', icon: 'assets/icons/icon_play2.png', stopIcon: 'assets/icons/icon_stop.png',
+        parentPos: '0 1.2 0', parentRot: '0 0 0', parentScale: '1 1 1',
+        btnPos: '0 0.4 0', btnRot: '0 0 0', btnScale: '0.3 0.3 1',
+        fixedRects: [ { pos: '0 -0.1 -0.01', rot: '0 0 0', scale: '0.8 0.15 1' } ],
+        patterns: [1,2,1,1,2,1,1,1,1,1,1,2,1,1,1,1,1,2,1,2,1,1,1,2,1,2,1,1,2,1], patternDuration: 2.0, playRectBasePos: {x: 0, y: -0.1, z: 0.01}, playRectScale: '0.7 0.12 1'
+    },
+    { 
+        id: 'credo', file: 'assets/audio/Credo.m4a', icon: 'assets/icons/icon_play3.png', stopIcon: 'assets/icons/icon_stop.png',
+        parentPos: '1 1.2 0', parentRot: '0 0 0', parentScale: '1 1 1',
+        btnPos: '0 0.4 0', btnRot: '0 0 0', btnScale: '0.3 0.3 1',
+        fixedRects: [ { pos: '0 -0.1 -0.01', rot: '0 0 0', scale: '0.8 0.15 1' }, { pos: '0 -0.3 -0.01', rot: '0 0 0', scale: '0.8 0.15 1' } ],
+        patterns: [1,1,1,1,2,1,1,1,2,1,1,1,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,1,1,2,1,2,1,1,2,1,1], patternDuration: 2.0, playRectBasePos: {x: 0, y: -0.1, z: 0.01}, playRectScale: '0.7 0.12 1'
+    },
+    { 
+        id: 'sanctus', file: 'assets/audio/Sanctus.m4a', icon: 'assets/icons/icon_play4.png', stopIcon: 'assets/icons/icon_stop.png',
+        parentPos: '-1 0.2 0', parentRot: '0 0 0', parentScale: '1 1 1',
+        btnPos: '0 0.4 0', btnRot: '0 0 0', btnScale: '0.3 0.3 1',
+        fixedRects: [ { pos: '0 -0.1 -0.01', rot: '0 0 0', scale: '0.8 0.15 1' } ],
+        patterns: [1,1,1,2,1,2,1,2,1,2,1], patternDuration: 2.0, playRectBasePos: {x: 0, y: -0.1, z: 0.01}, playRectScale: '0.7 0.12 1'
+    },
+    { 
+        id: 'agnusdei', file: 'assets/audio/AgnusDei.m4a', icon: 'assets/icons/icon_play5.png', stopIcon: 'assets/icons/icon_stop.png',
+        parentPos: '0 0.2 0', parentRot: '0 0 0', parentScale: '1 1 1',
+        btnPos: '0 0.4 0', btnRot: '0 0 0', btnScale: '0.3 0.3 1',
+        fixedRects: [ { pos: '0 -0.1 -0.01', rot: '0 0 0', scale: '0.8 0.15 1' } ],
+        patterns: [1,1,2,1,1,2,1,2,1,1,2], patternDuration: 2.0, playRectBasePos: {x: 0, y: -0.1, z: 0.01}, playRectScale: '0.7 0.12 1'
+    },
+    { 
+        id: 'avemaria', file: 'assets/audio/AveMaria.m4a', icon: 'assets/icons/icon_play6.png', stopIcon: 'assets/icons/icon_stop.png',
+        parentPos: '1 0.2 0', parentRot: '0 0 0', parentScale: '1 1 1',
+        btnPos: '0 0.4 0', btnRot: '0 0 0', btnScale: '0.3 0.3 1',
+        fixedRects: [ { pos: '0 -0.1 -0.01', rot: '0 0 0', scale: '0.8 0.15 1' } ],
+        patterns: [1,1,1,2,2,1,2,1], patternDuration: 2.0, playRectBasePos: {x: 0, y: -0.1, z: 0.01}, playRectScale: '0.7 0.12 1'
+    }
 ];
+
+// --- ユーティリティ関数 ---
+function linkify(text) {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.replace(urlRegex, function(url) {
+        return `<a href="${url}" target="_blank" style="color: #0066cc;">${url}</a>`;
+    });
+}
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -96,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
         for (const song of songsConfig) {
             try {
                 const response = await fetch(song.file);
-                if(response.ok) {
+                if (response.ok) {
                     const arrayBuffer = await response.arrayBuffer();
                     audioBuffers[song.id] = await audioCtx.decodeAudioData(arrayBuffer);
                 } else {
@@ -114,17 +154,20 @@ document.addEventListener('DOMContentLoaded', () => {
         mainUi.classList.remove('hidden');
         setupAudio();
         
-        // Convert plain text to HTML with breaks for formatting
-        creditsText.innerHTML = dict[lang]["credits"].replace(/\n/g, "<br>");
+        let creditsHtmlRaw = dict[lang]["credits"].replace(/\n/g, "<br>");
+        creditsText.innerHTML = linkify(creditsHtmlRaw);
+        
         infoTitle.innerText = dict[lang]["info_title"];
 
-        // We use autoStart: false, which means MindAR must be started explicitly
         if (sceneEl.systems && sceneEl.systems["mindar-image-system"]) {
             sceneEl.systems["mindar-image-system"].start();
         } else {
-            // Give it time to load if component isn't ready
             sceneEl.addEventListener('loaded', () => {
-                setTimeout(() => sceneEl.systems["mindar-image-system"].start(), 500);
+                setTimeout(() => {
+                    if (sceneEl.systems["mindar-image-system"]) {
+                        sceneEl.systems["mindar-image-system"].start();
+                    }
+                }, 500);
             });
         }
     };
@@ -139,7 +182,9 @@ document.addEventListener('DOMContentLoaded', () => {
             currentInfoContentId = isPlaying && currentPlayingId ? "content_" + currentPlayingId : "content_gregorian";
             infoText.innerText = dict[selectedLanguage][currentInfoContentId];
             
-            modalInfo.classList.add('open');
+            modalInfo.classList.remove('hidden'); // Ensure DOM rendering is ready
+            // small delay to allow CSS transition to apply correctly
+            setTimeout(() => modalInfo.classList.add('open'), 10);
             isInfoOpen = true;
         } else {
             closeModal(modalInfo, () => isInfoOpen = false);
@@ -150,7 +195,8 @@ document.addEventListener('DOMContentLoaded', () => {
         e.stopPropagation();
         if (isInfoOpen) closeModal(modalInfo, () => isInfoOpen = false);
         if (!isCreditsOpen) {
-            modalCredits.classList.add('open');
+            modalCredits.classList.remove('hidden');
+            setTimeout(() => modalCredits.classList.add('open'), 10);
             isCreditsOpen = true;
         } else {
             closeModal(modalCredits, () => isCreditsOpen = false);
@@ -160,6 +206,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModal = (modal, stateSetter) => {
         modal.classList.remove('open');
         stateSetter();
+        // optionally transition end event to add hidden back, if needed
+        setTimeout(() => {
+            if (!modal.classList.contains('open')) {
+                modal.classList.add('hidden');
+            }
+        }, 300); // match CSS transition duration
     };
 
     btnInfo.addEventListener('click', toggleInfo);
@@ -174,63 +226,73 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // --- ARエンティティの生成 ---
     songsConfig.forEach(song => {
         const sEntity = document.createElement('a-entity');
-        sEntity.setAttribute('position', `${song.dummyPos.x} ${song.dummyPos.y} ${song.dummyPos.z}`);
+        sEntity.setAttribute('position', song.parentPos);
+        sEntity.setAttribute('rotation', song.parentRot);
+        sEntity.setAttribute('scale', song.parentScale);
         
         const btn = document.createElement('a-image');
         btn.setAttribute('src', song.icon);
-        btn.setAttribute('width', '0.3');
-        btn.setAttribute('height', '0.3');
-        btn.setAttribute('position', '0 0.4 0');
+        btn.setAttribute('position', song.btnPos);
+        btn.setAttribute('rotation', song.btnRot);
+        btn.setAttribute('scale', song.btnScale);
         btn.classList.add('clickable');
         
         btn.addEventListener('click', () => handleSongClick(song));
         sEntity.appendChild(btn);
-        song.btnEntity = btn; // Keep reference to change icon easily
+        song.btnEntity = btn;
 
-        for(let i=0; i<song.fixedRectCount; i++) {
+        song.fixedRects.forEach(rectData => {
             const fRect = document.createElement('a-plane');
-            fRect.setAttribute('color', '#888888');
-            fRect.setAttribute('opacity', '0.5');
-            fRect.setAttribute('width', '0.8');
-            fRect.setAttribute('height', '0.15');
-            fRect.setAttribute('position', `0 ${-0.1 - (i*0.2)} -0.01`);
+            fRect.setAttribute('color', sharedConfig.fixedRect.color);
+            fRect.setAttribute('opacity', sharedConfig.fixedRect.opacity);
+            fRect.setAttribute('position', rectData.pos);
+            fRect.setAttribute('rotation', rectData.rot);
+            fRect.setAttribute('scale', rectData.scale);
             fRect.setAttribute('material', 'transparent: true');
             sEntity.appendChild(fRect);
-        }
+        });
 
+        // 再生囲いの生成
         song.playPatterns = [];
         let timerStart = 0;
         song.patterns.forEach((count, patternIdx) => {
             const patData = {
                 startTime: timerStart,
-                endTime: timerStart + 2.0, // dummy 2s threshold for each pattern
+                endTime: timerStart + song.patternDuration,
                 entities: []
             };
+            
             for(let i=0; i<count; i++) {
+                // ダミーでの自動配置計算 (並べて配置)
+                const offsetX = (i - (count-1)/2) * 0.75;
+                const offsetY = - (patternIdx % 3) * 0.2; // 少しずつずらすダミー
+                
                 const pRect = document.createElement('a-plane');
-                pRect.setAttribute('color', '#FFD700'); // Yellow
-                pRect.setAttribute('opacity', '0.6');
-                pRect.setAttribute('width', '0.7');
-                pRect.setAttribute('height', '0.12');
-                pRect.setAttribute('position', `${(i - (count-1)/2)*0.75} ${-0.1 - (patternIdx % 3)*0.2} 0.01`);
+                pRect.setAttribute('color', sharedConfig.playRect.color);
+                pRect.setAttribute('opacity', sharedConfig.playRect.opacity);
+                pRect.setAttribute('position', `${song.playRectBasePos.x + offsetX} ${song.playRectBasePos.y + offsetY} ${song.playRectBasePos.z}`);
+                pRect.setAttribute('scale', song.playRectScale);
+                pRect.setAttribute('rotation', '0 0 0');
                 pRect.setAttribute('visible', 'false');
                 pRect.setAttribute('material', 'transparent: true');
+                
                 sEntity.appendChild(pRect);
                 patData.entities.push(pRect);
             }
             song.playPatterns.push(patData);
-            timerStart += 2.0;
+            timerStart += song.patternDuration;
         });
 
         arContainer.appendChild(sEntity);
     });
 
+    // --- 初期位置マーカー検出 ---
     arTarget.addEventListener('targetFound', () => {
         if (!isArInitialized) {
             isArInitialized = true;
-            // The object3D.matrixWorld contains the absolute transformation of the target
             const pos = new THREE.Vector3();
             const quat = new THREE.Quaternion();
             const scale = new THREE.Vector3();
@@ -244,6 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- 制御処理 ---
     function stopSong() {
         if (currentSource) {
             try { currentSource.stop(); } catch(e){}
@@ -266,45 +329,45 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!audioCtx) return;
 
         if (isPlaying && currentPlayingId === clickedSong.id) {
-            stopSong(); // Stop playing condition 1
+            stopSong(); 
             return;
         }
 
         if (isPlaying) {
-            stopSong(); // Stop playing condition 2 (other song pressed)
+            stopSong(); 
         }
 
         currentPlayingId = clickedSong.id;
         isPlaying = true;
         
-        clickedSong.btnEntity.setAttribute('src', clickedSong.stopIcon); // Change icon to Stop
+        clickedSong.btnEntity.setAttribute('src', clickedSong.stopIcon); 
         
         if (audioBuffers[clickedSong.id]) {
             currentSource = audioCtx.createBufferSource();
             currentSource.buffer = audioBuffers[clickedSong.id];
             currentSource.connect(audioCtx.destination);
-            currentSource.onended = () => { stopSong(); }; // Condition 3 (track ended)
+            currentSource.onended = () => { stopSong(); }; 
             currentSource.start(0);
             audioStartTime = audioCtx.currentTime;
         } else {
-            console.warn("Audio buffer missing, simulating 10 seconds of playback for testing: " + clickedSong.id);
+            console.warn("Audio buffer missing, simulating playback for testing: " + clickedSong.id);
             audioStartTime = audioCtx.currentTime;
             
-            // Dummy logic to reset after some time
-            // To allow correct sync, we use audioCtx time
+            // Dummy playback length tracking
+            const totalDuration = clickedSong.patterns.length * clickedSong.patternDuration;
             setTimeout(() => {
                 if(currentPlayingId === clickedSong.id) stopSong();
-            }, 10000);
+            }, totalDuration * 1000);
         }
     }
 
+    // --- 同期ループ ---
     AFRAME.registerComponent('ar-playback-sync', {
         tick: function() {
             if (!isPlaying || !currentPlayingId) return;
             const song = songsConfig.find(s => s.id === currentPlayingId);
             if (!song) return;
             
-            // Use WebAudio currentTime for precise animation sync
             const timeElapsed = audioCtx ? (audioCtx.currentTime - audioStartTime) : 0;
             
             song.playPatterns.forEach(pat => {
