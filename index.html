@@ -43,12 +43,21 @@
                 <div id="credits-text"></div>
             </div>
         </div>
+        <!-- Custom MindAR Overlays -->
+        <div id="mindar-ui-loading" class="hidden">
+            <div class="loader">Loading...</div>
+        </div>
+        <div id="mindar-ui-scanning" class="hidden">
+            <div class="scanning-inner">
+                <div class="scanline"></div>
+            </div>
+        </div>
     </div>
 
     <!-- AR Layer -->
     <!-- We enable look-controls on camera so gyro continues working, and we stop updating MindAR component after 1st targetFound -->
     <!-- raycaster allows tapping AR objects -->
-    <a-scene mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: false; uiLoading: no; uiError: no; uiScanning: no" 
+    <a-scene mindar-image="imageTargetSrc: ./assets/targets.mind; autoStart: false; uiLoading: #mindar-ui-loading; uiScanning: #mindar-ui-scanning" 
              color-space="sRGB" 
              renderer="colorManagement: true, physicallyCorrectLights" 
              vr-mode-ui="enabled: false" 
